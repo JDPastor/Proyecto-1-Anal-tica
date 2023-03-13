@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Mar  8 12:42:03 2023
-
 @author: juand
 """
 
@@ -11,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-df = pd.read_csv(r'C:\Users\juand\OneDrive\Documentos\Analitica computacional\Proyecto 1\processed.cleveland.data', header=None,names=["age","sex","cp","trestbps","chol","fbs","restecg","thalach","exang","oldpeak","slope","ca","thal","num"])
+df = pd.read_csv('processed.cleveland.data', header=None,names=["age","sex","cp","trestbps","chol","fbs","restecg","thalach","exang","oldpeak","slope","ca","thal","num"])
 
 
 #Análisis exploratorio de los datos
@@ -48,6 +47,6 @@ df['thal'] = df['thal'].apply(lambda x: 0 if x == '3.0' else 1)
 df['ca'] = df['ca'].apply(lambda x: 0 if x == '0.0' else 1)
 df['num']=df['num'].apply(lambda x:0 if x==0 else 1)
 
+df = df.drop('ca',axis = 1)
 
-
-
+df.to_csv('datosFinal',index = False)
