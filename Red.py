@@ -4,6 +4,7 @@ from pgmpy . factors . discrete import TabularCPD
 from pgmpy . inference import VariableElimination
 from pgmpy.estimators import MaximumLikelihoodEstimator
 from pgmpy.estimators import BayesianEstimator
+import networkx as nx
 
 import pandas as pd
 import numpy as np
@@ -54,5 +55,9 @@ pseudo_counts = np.ones((2, 64)) * 200000
 cpdby_l = eby.estimate_cpd(node="num", prior_type="dirichlet", pseudo_counts=pseudo_counts)
 print(cpdby_l)
 
+edges = [('thal','trestbps'),('age','trestbps'),('age','chol'),('sex','chol'),('slope','num'),('trestbps','num'),('chol','num'),('fbs','num'),('restecg','num'),('exang','num'),('num','thalach'),('num','cp')]
 
-
+G = nx.DiGraph()
+G.add_edges_from(edges)
+pos = nx.kamada_kawai_layout(G, scale = 10)
+nx.draw(G, pos, with_labels=True, font_weight='bold')
