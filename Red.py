@@ -2,6 +2,8 @@
 from pgmpy . models import BayesianNetwork
 from pgmpy . factors . discrete import TabularCPD
 from pgmpy . inference import VariableElimination
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.estimators import BayesianEstimator
 
 import pandas as pd
 import numpy as np
@@ -12,8 +14,6 @@ print(df)
 model = BayesianNetwork([('thal','trestbps'),('age','trestbps'),('age','chol'),('sex','chol'),('slope','num'),('trestbps','num'),('chol','num'),('fbs','num'),('restecg','num'),('exang','num'),('num','thalach'),('num','cp')])
 print(model)
 
-
-from pgmpy.estimators import MaximumLikelihoodEstimator
 emv = MaximumLikelihoodEstimator(model=model, data=df)
 
 # Estimar para nodos sin padres
@@ -48,7 +48,6 @@ model.fit(data=df, estimator = MaximumLikelihoodEstimator)
 for i in model.nodes():
     print(model.get_cpds(i))
 
-from pgmpy.estimators import BayesianEstimator
 eby = BayesianEstimator(model=model, data=df)
 
 pseudo_counts = np.ones((2, 64)) * 200000

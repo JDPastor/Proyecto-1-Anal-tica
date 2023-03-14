@@ -2,31 +2,47 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Mar 13 17:27:39 2023
-
 @author: julianacepeda
 """
-
 
 import dash
 from dash import dcc  # dash core components
 from dash import html # dash html components
 
+from pgmpy . models import BayesianNetwork
+from pgmpy . factors . discrete import TabularCPD
+from pgmpy . inference import VariableElimination
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.estimators import BayesianEstimator
+
+import pandas as pd
+import numpy as np
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+model = BayesianNetwork([('thal','trestbps'),('age','trestbps'),('age','chol'),('sex','chol'),('slope','num'),('trestbps','num'),('chol','num'),('fbs','num'),('restecg','num'),('exang','num'),('num','thalach'),('num','cp')])
+df = pd.read_csv('datosFinal')
+emv = MaximumLikelihoodEstimator(model=model, data=df)
+model.fit(data=df, estimator = MaximumLikelihoodEstimator) 
+eby = BayesianEstimator(model=model, data=df)
+inference = VariableElimination(model)
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 
 options = [
-    {'label': 'Colesterol', 'value': 'colesterol'},
-    {'label': 'Azúcar', 'value': 'azucar'},
-    {'label': 'Diagnóstico', 'value': 'diagnostico'},
-    {'label': 'Talesemia', 'value': 'talesemia'},
-    {'label': 'Angina', 'value': 'angina'}
+    {'label': 'Colesterol', 'value': 'chol'},
+    {'label': 'Azúcar', 'value': 'fbs'},
+    {'label': 'Diagnóstico', 'value': 'num'},
+    {'label': 'Talesemia', 'value': 'thal'},
+    {'label': 'Angina', 'value': 'exang'}
 ]
 
+binario = [{'label': '0','value': 0},
+           {'label': '1', 'value': 1}]
+
 app.layout = html.Div(children=[
-    html.H1(children='Paciente'),
+    html.H1(children='Paciente', style={'font-size': '3rem'}),
     html.Div('Tener en cuenta lo siguiente y digite el numero correspondiente en la casilla.'),
     html.Div('Edad: 0 para menores de 45 años, 1 para mayores de 45 años'),
     html.Div('Sexo: 0 para femenino, 1 para masculino'),
@@ -42,73 +58,99 @@ app.layout = html.Div(children=[
     
     html.Div([
         html.Label('Edad:'),
-        dcc.Input(id='input-age', type='number', value=''),
-    ]),
+        dcc.Dropdown(id='dropdown-age',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
         html.Label('Sexo:'),
-        dcc.Input(id='input-sex', type='number', value=''),
-    ]),
-    
+        dcc.Dropdown(id='input-sex',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ],style={'display': 'inline-block', 'margin-right': '200px'}),
     
     html.Div([
-        html.Label('Presión arterial en reposo:'),
-        dcc.Input(id='input-trestbps', type='number', value=''),
-    ]),
+        html.Label('Presión arterial:'),
+        dcc.Dropdown(id='input-trestbps',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
         html.Label('Colesterol sérico:'),
-        dcc.Input(id='input-chol', type='number', value=''),
-    ]),
+        dcc.Dropdown(id='input-chol',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
         html.Label('Glucemia en ayunas:'),
-        dcc.Input(id='input-fbs', type='number', value=''),
-    ]),
+        dcc.Dropdown(id='input-fbs',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
-        html.Label('Talasemia'),
-        dcc.Input(id='input-thal', type='number', value=''),
-    ]),
+        html.Label('Talasemia:'),
+        dcc.Dropdown(id='input-thal',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
         html.Label('Resultados electrocardiográficos en reposo:'),
-        dcc.Input(id='input-restecg', type='number', value=''),
-    ]),
+        dcc.Dropdown(id='input-restecg',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
         html.Label('Frecuencia cardíaca máxima alcanzada:'),
-        dcc.Input(id='input-thalach', type='number', value=''),
-    ]),
+        dcc.Dropdown(id='input-thalach',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
         html.Label('Angina inducida por el ejercicio:'),
-        dcc.Input(id='input-exang', type='number', value=''),
-    ]),
+        dcc.Dropdown(id='input-exang',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
         html.Label('Pendiente del segmento ST de ejercicio máximo:'),
-        dcc.Input(id='input-slope', type='number', value=''),
-    ]),
+        dcc.Dropdown(id='input-slope',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
+    
     html.Div([
         html.Label('Dolor de pecho:'),
-        dcc.Input(id='input-cp', type='number', value=''),
-    ]),
-    
-    
+        dcc.Dropdown(id='input-cp',options=binario,
+        value=None,
+        style = {'width': '100px'})
+        ]),
     
     html.H6('Selecciona una opción a determinar'),
     dcc.Dropdown(
         id='dropdown-options',
         options=options,
-        value=options[0]['value']
-    ),
-    
+        value=None,
+        style = {'width': '200px'}
+        ),
     html.Button('Guardar', id='boton-guardar'),
     html.Div(id='resultado')
-
     ]
 )
-
 
              
 @app.callback(
     dash.dependencies.Output('resultado', 'children'),
     
     [dash.dependencies.Input('boton-guardar', 'n_clicks')],
-    [dash.dependencies.State('input-age', 'value'),
+    [dash.dependencies.State('dropdown-age', 'value'),
      dash.dependencies.State('input-sex', 'value'),
      dash.dependencies.State('input-trestbps', 'value'),
      dash.dependencies.State('input-chol', 'value'),
@@ -120,19 +162,29 @@ app.layout = html.Div(children=[
      dash.dependencies.State('input-slope', 'value'),
      dash.dependencies.State('input-cp', 'value'),
      dash.dependencies.State('dropdown-options', 'value')]
-    
 )
-   
 
 def guardar_datos(n_clicks, age, sex, trestbps, chol, fbs, thal,restecg, thalach, exang, slope, cp, value ):
     if n_clicks is None:
         return ''
     else:
-        return f'La edad ingresada es: {age} y el sexo es: {sex}'
+       lista = {"age": age, "sex": sex, "trestbps": trestbps, "chol": chol, "fbs": fbs, "thal": thal, "restecg": restecg, "thalach": thalach, "exang": exang, "slope": slope, "cp": cp}
+       lista = {k: v for k, v in lista.items() if v is not None}
 
+       query = inference.query(variables = [value], evidence = lista)
+       
+       if value == 'chol':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de tener colesterol alto.'
+       if value == 'num':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de padecer una enfermedad cardíaca.'
+       if value == 'fbs':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de tener niveles de azucar altos.'
+       if value == 'thal':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de padecer Talasemia'
+       if value == 'exang':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de que el dolor sea causado por ejercicio'
+       if value == None:
+           return ''
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-    
-    
-  
