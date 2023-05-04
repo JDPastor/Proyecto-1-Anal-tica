@@ -1,0 +1,106 @@
+network unknown {
+}
+variable age {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable chol {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable cp {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable exang {
+    type discrete [ 2 ] { 0.0, 1.0 };
+    property weight = None ;
+}
+variable fbs {
+    type discrete [ 2 ] { 0.0, 1.0 };
+    property weight = None ;
+}
+variable num {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable restecg {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable sex {
+    type discrete [ 2 ] { 0.0, 1.0 };
+    property weight = None ;
+}
+variable slope {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable thal {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable thalach {
+    type discrete [ 2 ] { 0.0, 1.0 };
+    property weight = None ;
+}
+variable trestbps {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+probability ( age | num ) {
+    ( 0 ) 0.25806451612903225, 0.7419354838709677;
+    ( 1 ) 0.09734513274336283, 0.9026548672566371;
+
+}
+probability ( chol | age ) {
+    ( 0 ) 0.627906976744186, 0.37209302325581395;
+    ( 1 ) 0.4175257731958763, 0.5824742268041238;
+
+}
+probability ( cp ) {
+    table 0.4936708860759494, 0.5063291139240507 ;
+}
+probability ( exang | cp ) {
+    ( 0 ) 0.4188034188034188, 0.5811965811965812;
+    ( 1 ) 0.875, 0.125;
+
+}
+probability ( fbs | age ) {
+    ( 0 ) 0.9534883720930233, 0.046511627906976744;
+    ( 1 ) 0.8144329896907216, 0.18556701030927836;
+
+}
+probability ( num | cp, exang ) {
+    ( 0, 0.0 ) 0.4897959183673469, 0.5102040816326531;
+    ( 0, 1.0 ) 0.1323529411764706, 0.8676470588235294;
+    ( 1, 0.0 ) 0.7619047619047619, 0.23809523809523808;
+    ( 1, 1.0 ) 0.7333333333333333, 0.26666666666666666;
+
+}
+probability ( restecg | chol ) {
+    ( 0 ) 0.5555555555555556, 0.4444444444444444;
+    ( 1 ) 0.40310077519379844, 0.5968992248062015;
+
+}
+probability ( sex | thal ) {
+    ( 0 ) 0.4609375, 0.5390625;
+    ( 1 ) 0.11009174311926606, 0.8899082568807339;
+
+}
+probability ( slope ) {
+    table 0.9324894514767933, 0.06751054852320675 ;
+}
+probability ( thal | num ) {
+    ( 0 ) 0.7741935483870968, 0.22580645161290322;
+    ( 1 ) 0.2831858407079646, 0.7168141592920354;
+
+}
+probability ( thalach | exang ) {
+    ( 0.0 ) 0.6948051948051948, 0.3051948051948052;
+    ( 1.0 ) 0.891566265060241, 0.10843373493975904;
+
+}
+probability ( trestbps ) {
+    table 0.189873417721519, 0.810126582278481 ;
+}

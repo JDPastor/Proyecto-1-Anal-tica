@@ -1,0 +1,45 @@
+network unknown {
+}
+variable cp {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable exang {
+    type discrete [ 2 ] { 0.0, 1.0 };
+    property weight = None ;
+}
+variable num {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+variable sex {
+    type discrete [ 2 ] { 0.0, 1.0 };
+    property weight = None ;
+}
+variable thal {
+    type discrete [ 2 ] { 0, 1 };
+    property weight = None ;
+}
+probability ( cp | num ) {
+    ( 0 ) 0.2661290322580645, 0.7338709677419355;
+    ( 1 ) 0.7433628318584071, 0.25663716814159293;
+
+}
+probability ( exang | cp ) {
+    ( 0 ) 0.4188034188034188, 0.5811965811965812;
+    ( 1 ) 0.875, 0.125;
+
+}
+probability ( num | thal ) {
+    ( 0 ) 0.75, 0.25;
+    ( 1 ) 0.25688073394495414, 0.7431192660550459;
+
+}
+probability ( sex | thal ) {
+    ( 0 ) 0.4609375, 0.5390625;
+    ( 1 ) 0.11009174311926606, 0.8899082568807339;
+
+}
+probability ( thal ) {
+    table 0.540084388185654, 0.459915611814346 ;
+}
