@@ -6,7 +6,7 @@ Created on Wed Mar  8 12:42:03 2023
 
 import pandas as pd
 import numpy as np
-
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -49,4 +49,7 @@ df['num']=df['num'].apply(lambda x:0 if x==0 else 1)
 
 df = df.drop('ca',axis = 1)
 
-df.to_csv('datosFinal',index = False)
+train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
+
+train_df.to_csv('datosTrain',index = False)
+test_df.to_csv('datosTest',index = False)
