@@ -12,6 +12,7 @@ import dash_html_components as html
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
+import pickle
 
 from pgmpy . models import BayesianNetwork
 from pgmpy . factors . discrete import TabularCPD
@@ -21,12 +22,16 @@ from pgmpy.estimators import BayesianEstimator
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-model = BayesianNetwork([('thal','trestbps'),('age','trestbps'),('age','chol'),('sex','chol'),('slope','num'),('trestbps','num'),('chol','num'),('fbs','num'),('restecg','num'),('exang','num'),('num','thalach'),('num','cp')])
+with open('model.pkl', 'rb') as f:
+    model = pickle.load(f)
+
+with open('modelNuevo.pkl', 'rb') as f:
+    model2 = pickle.load(f)
+
 df = pd.read_csv('datosNoNA')
-emv = MaximumLikelihoodEstimator(model=model, data=df)
-model.fit(data=df, estimator = MaximumLikelihoodEstimator) 
-eby = BayesianEstimator(model=model, data=df)
+
 inference = VariableElimination(model)
+inference2 = VariableElimination(model2)
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
@@ -50,23 +55,49 @@ conteo4 = df['thal'].value_counts()
 
 
 df_g1 = df.groupby(['num','sex']).agg({'num': 'count'})
-vectH = df_g1.loc[df_g1['num'] != 1]
-vectM = []
+
+df_female = df_g1.loc[df_g1.index.get_level_values('sex') == 0]
+df_male = df_g1.loc[df_g1.index.get_level_values('sex') == 1]
+count_female = df_female['num'].values
+count_male = df_male['num'].values
+
+num = {0,1,2,3,4}
+
+bars = []
+
+for num in num:
+    # Select the rows for the current value of "num"
+    df_num = df_g1.loc[num]
+    # Create the two bar charts for the current value of "num"
+    bar_female = go.Bar(
+        x=[num],
+        y=[df_num.loc[df_num.index.get_level_values('sex') == 0, 'num'].values[0]],
+        name='Female',
+        marker=dict(color='red'),
+        width=0.4
+    )
+    bar_male = go.Bar(
+        x=[num],
+        y=[df_num.loc[df_num.index.get_level_values('sex') == 1, 'num'].values[0]],
+        name='Male',
+        marker=dict(color='blue'),
+        width=0.4
+    )
+    bars.append(bar_female)
+    bars.append(bar_male)
 
 conteo5 = df['num'].value_counts()
 
-trace1 = go.Bar(x=df['num'], y=df['sex'], name='Variable 1')
-trace2 = go.Bar(x=df['num'], y=df['sex'], name='Variable 2')
-union = [trace1, trace2]
+union = [df_female, df_male]
 
 layout = go.Layout(
+    title='Diagnóstico por genero',
     barmode='group',
-    title='Comparación de variables por categoría',
-    xaxis=dict(title='Categoría'),
-    yaxis=dict(title='Valor')
+    showlegend = False,
+    bargap = 0
 )
 
-figure = go.Figure(data=union, layout=layout)
+fig = go.Figure(data=bars, layout=layout)
 
 app.layout = html.Div(children=[
     html.H1(children='Título del Tablero'),
@@ -92,7 +123,7 @@ app.layout = html.Div(children=[
             html.P(children='0 si no tiene enfermedad cardiaca y 1 a 4 si tiene enfermedad dependiendo de su gravedad', style={'text-align': 'center','font-size': '16px'}),
             dcc.Graph(
                 id='grafico2',
-                figure=px.bar(x=conteo5.index, y=conteo5.values, title='Sexo pacientes' )
+                figure=fig
             ),
             html.P(children='0 (rojo) si es mujer y 1 (azul) si es hombre', style={'text-align': 'center','font-size': '16px'}),
             dcc.Graph(
@@ -231,94 +262,174 @@ app.layout = html.Div(children=[
             
             html.Div([
                 html.Label('Edad:'),
-                dcc.Dropdown(id='dropdown-age',options=binario,
+                dcc.Dropdown(id='dropdown-age2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '500px'}),
             
             html.Div([
                 html.Label('Sexo:'),
-                dcc.Dropdown(id='input-sex',options=binario,
+                dcc.Dropdown(id='input-sex2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ],style={'display': 'inline-block', 'width': '50%'}),
             
             html.Div([
                 html.Label('Presión arterial:'),
-                dcc.Dropdown(id='input-trestbps',options=binario,
+                dcc.Dropdown(id='input-trestbps2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '500px'}),
             
             html.Div([
                 html.Label('Colesterol sérico:'),
-                dcc.Dropdown(id='input-chol',options=binario,
+                dcc.Dropdown(id='input-chol2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '50%'}),
             
             html.Div([
                 html.Label('Glucemia en ayunas:'),
-                dcc.Dropdown(id='input-fbs',options=binario,
+                dcc.Dropdown(id='input-fbs2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '500px'}),
             
             html.Div([
                 html.Label('Talasemia:'),
-                dcc.Dropdown(id='input-thal',options=binario,
+                dcc.Dropdown(id='input-thal2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '50%'}),
             
             html.Div([
                 html.Label('Resultados electrocardiográficos en reposo:'),
-                dcc.Dropdown(id='input-restecg',options=binario,
+                dcc.Dropdown(id='input-restecg2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '500px'}),
             
             html.Div([
                 html.Label('Frecuencia cardíaca máxima alcanzada:'),
-                dcc.Dropdown(id='input-thalach',options=binario,
+                dcc.Dropdown(id='input-thalach2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '50%'}),
             
             html.Div([
                 html.Label('Angina inducida por el ejercicio:'),
-                dcc.Dropdown(id='input-exang',options=binario,
+                dcc.Dropdown(id='input-exang2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '500px'}),
             
             html.Div([
                 html.Label('Pendiente del segmento ST de ejercicio máximo:'),
-                dcc.Dropdown(id='input-slope',options=binario,
+                dcc.Dropdown(id='input-slope2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '50%'}),
             
             html.Div([
                 html.Label('Dolor de pecho:'),
-                dcc.Dropdown(id='input-cp',options=binario,
+                dcc.Dropdown(id='input-cp2',options=binario,
                 value=None,
                 style = {'width': '100px'})
             ], style={'display': 'inline-block', 'width': '500px'}),
             html.H1(children=' ', style={ 'background-color': 'white', 'padding': '10px'}),
             html.H6('Selecciona una opción a determinar'),
             dcc.Dropdown(
-                id='dropdown-options',
+                id='dropdown-options2',
                 options=options,
                 value=None,
                 style = {'width': '200px'}
                 ),
-            html.Button('Guardar', id='boton-guardar'),
-            html.Div(id='resultado')
+            html.Button('Guardar', id='boton-guardar2'),
+            html.Div(id='resultado2')
         
         ]),
     ])
 ])
+
+@app.callback(
+    dash.dependencies.Output('resultado', 'children'),
+    
+    [dash.dependencies.Input('boton-guardar', 'n_clicks')],
+    [dash.dependencies.State('dropdown-age', 'value'),
+     dash.dependencies.State('input-sex', 'value'),
+     dash.dependencies.State('input-trestbps', 'value'),
+     dash.dependencies.State('input-chol', 'value'),
+     dash.dependencies.State('input-fbs', 'value'),
+     dash.dependencies.State('input-thal', 'value'),
+     dash.dependencies.State('input-restecg', 'value'),
+     dash.dependencies.State('input-thalach', 'value'),
+     dash.dependencies.State('input-exang', 'value'),
+     dash.dependencies.State('input-slope', 'value'),
+     dash.dependencies.State('input-cp', 'value'),
+     dash.dependencies.State('dropdown-options', 'value')]
+)
+
+def guardar_datos(n_clicks, age, sex, trestbps, chol, fbs, thal,restecg, thalach, exang, slope, cp, value ):
+    if n_clicks is None:
+        return ''
+    else:
+       lista = {"age": age, "sex": sex, "trestbps": trestbps, "chol": chol, "fbs": fbs, "thal": thal, "restecg": restecg, "thalach": thalach, "exang": exang, "slope": slope, "cp": cp}
+       lista = {k: v for k, v in lista.items() if v is not None}
+
+       query = inference.query(variables = [value], evidence = lista)
+       
+       if value == 'chol':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de tener colesterol alto.'
+       if value == 'num':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de padecer una enfermedad cardíaca.'
+       if value == 'fbs':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de tener niveles de azucar altos.'
+       if value == 'thal':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de padecer Talasemia'
+       if value == 'exang':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de que el dolor sea causado por ejercicio'
+       if value == None:
+           return ''
+
+@app.callback(
+    dash.dependencies.Output('resultado2', 'children'),
+    
+    [dash.dependencies.Input('boton-guardar2', 'n_clicks')],
+    [dash.dependencies.State('dropdown-age2', 'value'),
+     dash.dependencies.State('input-sex2', 'value'),
+     dash.dependencies.State('input-trestbps2', 'value'),
+     dash.dependencies.State('input-chol2', 'value'),
+     dash.dependencies.State('input-fbs2', 'value'),
+     dash.dependencies.State('input-thal2', 'value'),
+     dash.dependencies.State('input-restecg2', 'value'),
+     dash.dependencies.State('input-thalach2', 'value'),
+     dash.dependencies.State('input-exang2', 'value'),
+     dash.dependencies.State('input-slope2', 'value'),
+     dash.dependencies.State('input-cp2', 'value'),
+     dash.dependencies.State('dropdown-options2', 'value')]
+)
+
+def guardar_datos(n_clicks, age, sex, trestbps, chol, fbs, thal,restecg, thalach, exang, slope, cp, value ):
+    if n_clicks is None:
+        return ''
+    else:
+       lista = {"age": age, "sex": sex, "trestbps": trestbps, "chol": chol, "fbs": fbs, "thal": thal, "restecg": restecg, "thalach": thalach, "exang": exang, "slope": slope, "cp": cp}
+       lista = {k: v for k, v in lista.items() if v is not None}
+
+       query = inference2.query(variables = [value], evidence = lista)
+       
+       if value == 'chol':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de tener colesterol alto.'
+       if value == 'num':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de padecer una enfermedad cardíaca.'
+       if value == 'fbs':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de tener niveles de azucar altos.'
+       if value == 'thal':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de padecer Talasemia'
+       if value == 'exang':
+           return f'El paciente tiene una probabilidad de {query.values[1]*100:,.2f}% de que el dolor sea causado por ejercicio'
+       if value == None:
+           return ''
 
 if __name__ == '__main__':
     app.run_server(debug=True)
